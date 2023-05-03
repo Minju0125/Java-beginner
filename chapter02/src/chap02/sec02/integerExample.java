@@ -6,7 +6,7 @@ public class integerExample {
 		// 정수타입 : byte, short, int(기본형), long 
 		byteMethod();
 		shortMethod();
-		
+		intMethod();
 	}
 	
 	public static void byteMethod() {
@@ -43,13 +43,29 @@ public class integerExample {
 	
 	public static void intMethod() {
 		// int : 4byte 제공
-		//   기본정수형, 가장 많이 사용되어지는 정수 데이터 타입
+		//       기본정수타입, 가장 많이 사용되어지는 정수 데이터 타입
 		// 		  약 21억 (2147483647) ~ - 2147483648 까지의 정수를 저장
 		// 		  범위를 벗어난 값을 저장하면 오류
 		// 		  연산된 데이터가 범위를 벗어나면 순환적용된 결과 반환
 		// 		 (0,1,2,...,2147483647,-2147483648,- 2147483647,...,-1)
 		//       int 보다 작은 타입은 연산 시 무조건 int 로 -> 헷갈리면 long으로,,
 		
+		
+//		int num =200;
+//		int num1=10000000;
+//		
+//		int res = num1 * num1;
+//		System.out.println(res);
+		
+		int num = 200;
+		int num1 = 10000000;
+		long num2 = 1000000L;
+		
+		int res = num * num1;
+		System.out.println(res);
+		
+		long res1=num1*num2;
+		System.out.println(res1);
 		
 	}
 	
