@@ -2,7 +2,7 @@ package chapter04.sec02;
 
 import java.util.Scanner;
 
-public class ForstatementExample01 {
+public class ForStatementExample01 {
 
 	public static void main(String[] args) {
 		ForStatement fs = new ForStatement();
@@ -35,7 +35,7 @@ class ForStatement {
 
 	}
 
-	public void method2() {
+public void method2() {
 		// 1~100 사이의 짝수의 합과 홀수의 합을 구하시오.
 
 		int sumOfEven = 0; // 짝수의 값이 저장될 공간은 for 문 밖에서
