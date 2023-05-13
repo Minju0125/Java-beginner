@@ -1,16 +1,17 @@
 package chap05.homework;
-// 아직 진행중...
+
+import java.util.Arrays;
+
 import java.util.Scanner;
 
 public class Homework {
 
 	public static void main(String[] args) {
 		Homework01 hw = new Homework01();
-		Homework02 hw2 = new Homework02();
-//		hw.method01();
-		hw2.diceSuffle();
-		hw2.diceget();
 
+//		hw.method01();
+		hw.method02();
+//		hw.method03();
 	}
 
 }
@@ -34,51 +35,43 @@ class Homework01 {
 			quotient = money / unit[i];
 			money = money - quotient * unit[i];
 			System.out.println(unit[i] + "원 : " + quotient + "매");
-		} 
-		 
 		}
+
 	}
 
-
-class Homework02 {
-	int[] dice = { 1, 2, 3, 4, 5, 6 };
-
-	public void diceSuffle() {
-		/*
-		 * 2. 주사위를 50번던져 나온 각각의 눈의 횟수를 구하고 이를 히스토그램으로 출력하시오
-		 * 
-		 * ex) 1 : ********(8) 2 : *********(9) 3 : **********(10) 4 : ********(8) 5 :
-		 * *********(9) 6 : *******(7)
-		 * 
-		 */
-
-		for (int i = 0; i < 10000000; i++) {
-			int rnd = (int) (Math.random() * 6);
-			int temp = dice[0];
-			dice[0] = dice[rnd];
-			dice[rnd] = temp;
-
+	
+	public void method02() {
+		int diceCount[] = new int[6]; // 주사위 1~6이 들어갈 저장공간
+		String astCount[] = new String [6]; // ????
+		for (int i = 0; i<astCount.length; i++) {
+			astCount[i]=""; // 이걸 안하면 문자가 들어갈 6자리의 기억공간에 null 이 들어감
 		}
-	}
-
-	/*
-	 * 주사위를 던진 횟수는 50회
-	 * 
-	 * 
-	 */
-
-	public void diceget() {
-		int i;
-		int rnd = (int) (Math.random() * 6);
-		for (i = 0; i < 50; i++) {
-			diceSuffle();
-			switch(dice[rnd]) {
+		for (int i = 0; i <50; i++) {
+			int dice = (int) (Math.random() * 6);
+			++diceCount[dice];
+			astCount[dice] = astCount[dice] + "*";
 			
-			
-			}
+		} for (int i = 0; i<diceCount.length; i++) {
+			System.out.println("주사위눈 : " + (i+1)+ ":" + astCount[i] + "(" + diceCount[i] + ")");
+		}
+		
+		
+	}
+	
+	public void method03() {
 
+		Scanner sc = new Scanner(System.in);
+
+		int[] score = new int[10];
+
+		for (int i = 0; i < score.length; i++) {
+			System.out.println("정수를 입력하시오. : ");
+			score[i] = sc.nextInt();
 		}
 
-	}
+		Arrays.sort(score);
+		System.out.println("최대값 : " + score[9]);
+		System.out.println("최소값 : " + score[0]);
 
+	}
 }
