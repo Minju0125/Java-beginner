@@ -11,7 +11,6 @@ public class OneDimArrayExample {
 		System.out.println("\n합계" +od.addArray(score));
 //		int sum=od.addArray(score); 
 		
-			//od 클래스 객체에 addarray score를 ??????
 
 	}
 
