@@ -16,7 +16,8 @@ public class TvExample {
 //		p2.setWide("150x200");
 //		System.out.println(p2);
 		/*
-		 * 이렇게 쓰려면 public PrintTv() { }
+		 * 이
+		 * 렇게 쓰려면 public PrintTv() { }
 		 * 
 		 * public PrintTv(String company, int year, String Wide) { this.company =
 		 * company; this.year = year; this.wide = wide; }
