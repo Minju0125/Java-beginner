@@ -5,99 +5,109 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 import service.LoginService;
+import service.MemberService;
 
-/*µ¿Àû query ¸í·É¾î °´Ã¼
--> ÀÚ¹ÙÀÇ ½ÇÇà½Ã°£¿¡ ÇÊ¿äÇÑ µ¥ÀÌÅÍ¸¦ ÀÔ·Â¹Ş¾Æ Äõ¸® ½ÇÇà
-1) º¯¼ö¿¡ ÇÒ´çµÉ °ª ´ë½Å ?¸¦ ±â¼úÇÏ¿© Äõ¸® ±¸¼º
-	 ex) tbl_member¿¡ ½Å±ÔÈ¸¿ø µî·ÏÇÏ·Á¸é,
-	 sql = "insert into tbl_member values (?,?,?,?,?)"
-2)	queryÀÇ ?¿¡ ÇØ´çµÇ´Â °ªÀ» ¸ÊÇÎ½ÃÄÑ¾ßÇÔ.
-	queryÀÇ ?¿¡ ´ëÀÀÇÏ´Â µ¥ÀÌÅÍ mapping (setter ¸Ş¼Òµå : setµ¥ÀÌÅÍÅ¸ÀÔ)
-	¸í·É¾î°´Ã¼º¯¼ö.setµ¥ÀÌÅÍÅ¸ÀÔ (?¼ø¹ø, °ª)
-	ex) PreparedStatement ps = conn PreparedStatement(sql);
-	 	ps.setString(1,"a002") -> mem_id //String : Å×ÀÌºí ÄÃ·³ÀÇ µ¥ÀÌÅÍ Å¸ÀÔ
-	 	ps.setString(2, "09876") -> mem_pass
-	 	ps.setString(3, "Á¤¸ùÁÖ") -> mem name
-	 	ps.setString(4, "951230-1234567") -> mem_jumin
-	 	ps.setInt(5,1000) -> mem_milege
-	¸ÊÇÎµÇ¸é Äõ¸® ¿Ï¼º(½ÇÇàÀº ¾ÆÁ÷)
-	½ÇÇàÀº 2°¡Áö ¸í·É - > executeÄõ¸®(Äõ¸®°¡ select¹®ÀÏ¶§), ³ª¸ÓÁö´Â executeUpdate ¸Ş¼Òµå »ç¿ë
-3) Äõ¸® ½ÇÇà
-	* select ¹® : executeQuery()
-	* ±× ÀÌ¿ÜÀÇ query :  executeUpdate()
-4) ½ÇÇà°á°ú
-	* select ¹®: ResultSet °´Ã¼¿¡ ÀúÀå
-	ex) ResultSet rs = executeQuery(); // ResultSetÀº ÇÏ³ªÀÇ Çà
-	while(rs.next()) {
-			String mid = rs.getString("MEM_ID");
-					:
-			int mileage = rs.getInt("MEM_MILEAGE");
-	}
-	* ±× ÀÌ¿ÜÀÇ query : Ä¿¼­ (Äõ¸®·Î ¿µÇâ¹ŞÀº Çà(row)ÀÇ ÁıÇÕ)ÀÇ ÇàÀÇ ¼ö (Á¤¼ö) 
-*/
-
+//ë™ì  queryëª…ë ¹ì–´ ê°ì²´
+//  ->ìë°”ì˜ ì‹¤í–‰ì‹œê°„ì— í•„ìš”í•œ ë°ì´í„°ë¥¼ ì…ë ¥ë°›ì•„ ì¿¼ë¦¬ ì‹¤í–‰
+// 1)ë³€ìˆ˜ì— í• ë‹¹ë  ê°’ ëŒ€ì‹  ?ë¥¼ ê¸°ìˆ í•˜ì—¬ ì¿¼ë¦¬ êµ¬ì„±
+// ex) tbl_memberì— ì‹ ê·œíšŒì›ë“±ë¡
+//   sql="insert into tbl_member values(?, ?, ?, ?, ?)"
+// 2)queryì˜ ?ì— ëŒ€ì‘í•˜ëŠ” ë°ì´í„° mapping(setterë©”ì„œë“œ:
+//   ëª…ë ¹ì–´ê°ì²´ë³€ìˆ˜.setë°ì´í„°íƒ€ì…(?ìˆœë²ˆ, ê°’) 
+//  ex) PreparedStatement ps=conn.preparedStatement(sql);
+//      ps.setString(1, "a002") ->mem_id
+//      ps.setString(2, "09876") ->mem_pass
+//      ps.setString(3, "ì •ëª½ì£¼") ->mem_name
+//      ps.setString(4, "951230-1234567") ->mem_jumin
+//      ps.setInt(5, 1000) ->mem_mileage
+//  3)ì¿¼ë¦¬ ì‹¤í–‰
+//    . select ë¬¸ : executeQuery()
+//    . ê·¸ ì´ì™¸ì˜ query : executeUpdate() 
+//  4)ì‹¤í–‰ê²°ê³¼ 
+//    . select ë¬¸ : ResultSet ê°ì²´ì— ì €ì¥
+//    ex) ResultSet rs=executeQuery();
+//        while(rs.next()){
+//              String mid=rs.getString("MEM_ID");
+//                              :
+//              int mileage=rs.getInt("MEM_MILEAGE");
+//        }
+//    . ê·¸ ì´ì™¸ì˜ query : ì»¤ì„œ(ì¿¼ë¦¬ë¡œ ì˜í–¥ë°›ì€ í–‰(row)ì˜ ì§‘í•©)ì˜ í–‰ì˜ ìˆ˜(ì •ìˆ˜)
 public class PreparedStatementExample01 {
-	static Scanner sc = new Scanner(System.in); // static ¼±¾ğÇÏ¸é ½ºÄ³³ÊÅ¬·¡½º¸¦ ÀÌ Å¬·¡½º ¾È¿¡¼­ ¾îµğ¼­³ª ¾µ¼ö ÀÖÀ½.
+	private static Scanner sc = new Scanner(System.in);
 
 	private String url = "jdbc:oracle:thin:@127.0.0.1:1521:xe";
 	private String user = "pc13";
 	private String passwd = "java";
 
-	private Connection conn;
+	private Connection conn = null;
 	private PreparedStatement pstmt = null;
-	private Statement stmt = null;
 	private ResultSet rs = null;
 	private int rowCount = 0;
 
+	MemberService memberService = MemberService.getInstance();
+
 	public static void main(String[] args) {
-
-		String sql = "INSERT INTO tbl_member VALUES(?,?,?,?,?)"; // sql Äõ¸® Á¦½Ã
 		PreparedStatementExample01 ps01 = new PreparedStatementExample01();
-		int result = ps01.insert(sql);
-
-		int result = new PreparedStatementExample01().insert(sql);
-		if (result != 0) {
-			System.out.println("ÀÚ·á°¡ ¼º°øÀûÀ¸·Î ÀúÀåµÇ¾ú½À´Ï´Ù. ");
-		} else {
-			System.out.println("ÀÚ·á°¡ ÀúÀåµÇÁö ¾Ê¾Ò½À´Ï´Ù. ");
-
+		/*
+		 * String sql = " INSERT INTO tbl_member VALUES(?, ?, ?, ?, ?) ";
+		 * PreparedStatmentExample01 ps01=new PreparedStatmentExample01(); int result =
+		 * ps01.insert(sql); if (result != 0) {
+		 * System.out.println("ìë£Œê°€ ì„±ê³µì ìœ¼ë¡œ ì €ì¥ë˜ì—ˆìŠµë‹ˆë‹¤. "); } else {
+		 * System.out.println("ìë£Œê°€ ì €ì¥ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤. "); }
+		 */
+//		ps01.update();
+		
+		while (true) {
+			
+			System.out.println("[1. ì „ì²´ì¡°íšŒ]");
+			System.out.println("[2. ê°œë³„ì¡°íšŒ]");
+			System.out.println("-----------------");
+			System.out.println("ì„ íƒ -> : ");
+			int choice = sc.nextInt();
+			
+			switch (choice) {
+			case 1:
+				searchAll();
+				break;
+			case 2:
+				searchOne();
+				break;
+			default:
+				System.out.println("ì„ íƒë²ˆí˜¸ë¥¼ ì˜ëª» ì…ë ¥ í–ˆìŠµë‹ˆë‹¤.");
+			}
 		}
-		result = ps01.update();
+
 	}
 
 	public int insert(String sql) {
-
 		String mid = "";
-		// ÀÔ·Â¹ŞÀº È¸¿ø¾ÆÀÌµğÀÇ Áßº¹¿©ºÎ¸¦ ¸ÕÀú ÆÄ¾ÇÇÏ´Â while¹®
 		while (true) {
-			System.out.print("È¸¿ø ¾ÆÀÌµğ : ");
+			System.out.print("íšŒì› ì•„ì´ë”” : ");
 			mid = sc.next();
-//			param.add(mid);
 			LoginService loginService = LoginService.getInstance();
-			Map<String, Object> map = loginService.isDuplicate(mid); // ·Î±×ÀÎ ¼­ºñ½º¿¡ ÀÖ´Â ¸Ş¼Òµå
+			Map<String, Object> map = loginService.isDuplicate(mid);
 			if (map != null) {
-				System.out.println("¾ÆÀÌµğ°¡ Áßº¹µÇ¾ú½À´Ï´Ù...");
+				System.out.println("ì•„ì´ë””ê°€ ì¤‘ë³µë˜ì—ˆìŠµë‹ˆë‹¤...");
 			} else {
 				break;
 			}
 		}
-		System.out.print("È¸¿ø¸í : ");
+		System.out.print("íšŒì›ëª… : ");
 		String mname = sc.next();
 
-		System.out.print("ºñ¹Ğ¹øÈ£ : ");
+		System.out.print("ë¹„ë°€ë²ˆí˜¸ : ");
 		String pw = sc.next();
 
-		System.out.print("ÁÖ¹Îµî·Ï¹øÈ£ : ");
+		System.out.print("ì£¼ë¯¼ë“±ë¡ë²ˆí˜¸ : ");
 		String jumin = sc.next();
 
-		System.out.print("¸¶ÀÏ¸®Áö : ");
+		System.out.print("ë§ˆì¼ë¦¬ì§€ : ");
 		int mileage = sc.nextInt();
 
 		try {
@@ -132,86 +142,37 @@ public class PreparedStatementExample01 {
 		return rowCount;
 	}
 
-	public int update(String sql) {
-		// È¸¿ø¾ÆÀÌµğ ¹Ş¾Æ¼­ Áßº¹ÀÌ µÇ¾î¾ß update µÉ ¼ö ÀÖÀ½
-		// ¾÷µ¥ÀÌÆ® ´ë»óÀÌ ÀÌ¹Ì Á¸ÀçÇØ¾ß ¼öÁ¤°¡´É. -- ÀÚ·á ¾øÀ¸¸é insert ÀÓ
-
-		String mid = "";
-		String flag = "";
-		String pw = "";
-		String jumin = "";
-		int mileage = 0;
-		List<Object> param = new ArrayList<Object>();
-
-		// ÀÔ·Â¹ŞÀº È¸¿ø¾ÆÀÌµğÀÇ Áßº¹¿©ºÎ¸¦ ¸ÕÀú ÆÄ¾ÇÇÏ´Â while¹®
-		while (true) {
-			System.out.print("È¸¿ø ¾ÆÀÌµğ : ");
-			mid = sc.next();
-//		param.add(mid);
-			LoginService loginService = LoginService.getInstance();
-			Map<String, Object> map = loginService.isDuplicate(mid); // ·Î±×ÀÎ ¼­ºñ½º¿¡ ÀÖ´Â ¸Ş¼Òµå
-			if (map == null) {
-				System.out.println("È¸¿øÁ¤º¸°¡ ¾ø½À´Ï´Ù.");
-			} else {
-				param.add(mid); // **********************ÀÌ°É ¿Ö ÇÏ´ÂÁö??
-				break;
-			}
+	public void update() {
+		int res = memberService.update();
+		if (res > 0) {
+			System.out.println("ìë£Œê°€ ì •ìƒì ìœ¼ë¡œ ê°±ì‹ ë˜ì—ˆìŠµë‹ˆë‹¤");
+		} else {
+			System.out.println("ìë£Œ ê°±ì‹ ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤");
 		}
-
-		System.out.print("ºñ¹Ğ¹øÈ£¸¦  º¯°æÇÏ°Ú½À´Ï±î? (Y/N) : ");
-		flag = sc.next();
-		while (flag.equalsIgnoreCase("y")) {
-			System.out.print("ºñ¹Ğ¹øÈ£ : ");
-			pw = sc.next(); // **********************nextLine¾Æ´Ï°í next??
-			param.add(pw);
-		}
-		System.out.println("ÁÖ¹Î¹øÈ£¸¦ º¯°æÇÏ°Ú½À´Ï±î? (Y/N) : ");
-		flag = sc.next();
-		while (flag.equalsIgnoreCase("y")) {
-			System.out.println("ÁÖ¹Îµî·Ï¹øÈ£ : ");
-			jumin = sc.next();
-		}
-
-		System.out.println("¸¶ÀÏ¸®Áö¸¦ º¯°æÇÏ°Ú½À´Ï±î? (Y/N) : ");
-		flag = sc.next();
-		while (flag.equalsIgnoreCase("y")) {
-			System.out.println("¸¶ÀÏ¸®Áö : ");
-			mileage = sc.nextInt();
+	}
+	
+	
+	public static void searchAll() {
+		List<Map<String, Object>> memberService.searchAll();
+		
+	}
+	
+	public void searchOne() {
+		Map<String, Objcet> result = memberService.searchOne();
+		//ê²°ê³¼ë¥¼ ë§µì— ì €ì¥
+		if(result != null) { // nullì´ ì•„ë‹ˆë¼ëŠ” ê²ƒì€ ê²°ê³¼ê°€ ë“¤ì–´ì™”ë‹¤ëŠ” ê²ƒ
+			System.out.println("				[[ íšŒì› LIST ]]");
+//			System.out.println("[2. ê°œë³„ì¡°íšŒ]");
+//			System.out.println("-----------------");
+//			System.out.println("ì„ íƒ -> : ");
+//			ì—¬ê¸° ê³ ì³ì•¼í•¨
+			String mid = (String)result.get("MEM_ID");
+//			String name = (String)result.get("MEM_name");
+			String jumin = (String)result.get("MEM_jumin");
+			int mileage = Integer.parseInt(String.copyValueOf(result.get("")) //?/?)
+					
 		}
 		
-		int len = updateSql.length();
-		update
-
-		try {
-			conn = DriverManager.getConnection(url, user, passwd);
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, mid);
-			pstmt.setString(2, pw);
-			pstmt.setString(3, mname);
-			pstmt.setString(4, jumin);
-			pstmt.setInt(5, mileage);
-
-			rowCount = pstmt.executeUpdate();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			if (rs != null)
-				try {
-					rs.close();
-				} catch (Exception e) {
-				}
-			if (pstmt != null)
-				try {
-					pstmt.close();
-				} catch (Exception e) {
-				}
-			if (conn != null)
-				try {
-					conn.close();
-				} catch (Exception e) {
-				}
-		}
-		return rowCount;
 	}
-
+	
 }
