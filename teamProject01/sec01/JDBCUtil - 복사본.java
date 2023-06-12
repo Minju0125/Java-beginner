@@ -1,6 +1,4 @@
-package sec01;
-
-
+package teamProject01.sec01;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -17,11 +15,19 @@ import java.util.Scanner;
 
 class JDBCUtil{
 	
-	JDBCUtil(){}
 	Scanner sc = new Scanner(System.in);
 	DAOConnection daoConn = DAOConnection.getInstance();
+	
+	private static JDBCUtil instance=null;
+	private JDBCUtil() {}
+	
+	public static JDBCUtil getInstance() {
+		if(instance==null) instance=new JDBCUtil();
+		return instance;
+	}
+	
+	
 	static Map<String, Object> loginUser = null;
-	String sql;
 		/*
 		 * daoConn을 만든 순간 protected static Connection conn = null; protected Statement
 		 * stmt = null; protected PreparedStatement pstmt = null; protected ResultSet rs
@@ -30,6 +36,7 @@ class JDBCUtil{
 
 		protected void connectConn() {
 			daoConn.connectConn();
+			
 		}
 
 		protected void disconnectConn() {
@@ -178,8 +185,14 @@ class DAOConnection {
 		try {
 			conn = DriverManager.getConnection(URL, USER, PASSWD);
 			stmt = conn.createStatement();
+			stmt.execute(" select ascii_seq.nextval from dual ");
+			stmt.execute(" alter sequence ascii_seq increment by -1 ");
+			stmt.execute(" select ascii_seq.nextval from dual ");
+			stmt.execute(" alter sequence ascii_seq increment by 1 ");
+			
 			System.out.println("연결되었습니다.");
 		} catch (SQLException e) {
+			e.printStackTrace();
 			System.out.println("아주 심각한 오류가 발생했어용");
 		}
 	}

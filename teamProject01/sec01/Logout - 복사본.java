@@ -1,11 +1,11 @@
-package sec01;
+package teamProject01.sec01;
 
 import java.util.Scanner;
 
 public class Logout{
 
 	public static void main(String[] args) {
-		JDBCUtil jdbc=new JDBCUtil();
+		JDBCUtil jdbc=JDBCUtil.getInstance();
 		LoginService login = new LoginService();
 		LogoutService logout = new LogoutService();
 		jdbc.connectConn();
@@ -16,7 +16,7 @@ public class Logout{
 }
 
 class LogoutService {
-	JDBCUtil jdbc=new JDBCUtil();
+	JDBCUtil jdbc=JDBCUtil.getInstance();
 	Scanner sc=new Scanner(System.in);
 	
 	public LogoutService() {}

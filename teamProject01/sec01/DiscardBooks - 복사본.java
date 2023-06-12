@@ -1,4 +1,4 @@
-package sec01;
+package teamProject01.sec01;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -6,30 +6,17 @@ import java.util.List;
 import java.util.Scanner;
 
 public class DiscardBooks { //없는도서 삭제하려고하면 "없는도서입니다.", 삭제하기 전 확인시켜주기
-
-	public static void main(String[] args) {
-		JDBCUtil jdbcUtil = new JDBCUtil();
-		DiscardBooksService discard = new DiscardBooksService();
-		try {
-			jdbcUtil.connectConn();
-			discard.discardBooks();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			jdbcUtil.disconnectConn();
-		}
-	}
 }
 
 class DiscardBooksDAO {
-	JDBCUtil jdbcUtil = new JDBCUtil();
+	JDBCUtil jdbc=JDBCUtil.getInstance();
 
-	public void DiscardBooksDAO(String BK_NO) {
-		String sql = " UPDATE BOOK SET BK_STM='2' WHERE BK_NO=? ";
+	public void DiscardBooksDAO(String bk_no) {
+		String sql = " UPDATE BOOK SET BK_STM='2', BK_LDSNO='-', BK_RSVSNO='-' WHERE BK_NO=? ";
 		List<Object> param = new ArrayList<>();
-		param.add(BK_NO);
+		param.add(bk_no);
 
-		int result = jdbcUtil.update(sql, param);
+		int result = jdbc.update(sql, param);
 
 		if (result == 1) {
 			System.out.println("도서 폐기 완료");
@@ -40,26 +27,26 @@ class DiscardBooksDAO {
 }
 
 class DiscardBooksService {
-	JDBCUtil jdbcUtil = new JDBCUtil();
+	JDBCUtil jdbc=JDBCUtil.getInstance();
 	DiscardBooksDAO dBDao = new DiscardBooksDAO();
 
 	public void discardBooks() {
 		Scanner sc = new Scanner(System.in);
 		String sql = " select BK_NO 책번호, BK_TITLE 제목, BK_WRITER 저자, BK_PUB 출판사 from book where bk_no=? ";
-		String BK_NO=null;
+		String bk_no=null;
 		while (true) {
 			System.out.print("폐기할 도서(책번호) : ");
-			BK_NO = sc.nextLine();
-			Object result = jdbcUtil.isDuplicateBK(BK_NO, "BK_NO");
-			if (BK_NO.equals(result)) {
+			bk_no = sc.nextLine();
+			if (bk_no.equals(jdbc.isDuplicateBK(bk_no, "BK_NO"))
+					&& ((String)jdbc.isDuplicateBK(bk_no, "BK_STM")).equals("1")) { ////"1"-> STM 디폴트값 1로 변경됐는지 잘 확인
 				List<Object> param = new ArrayList<>();
-				param.add(BK_NO);
-				System.out.println(jdbcUtil.selectOneRow(sql, param));
+				param.add(bk_no);
+				System.out.println(jdbc.selectOneRow(sql, param));
 				System.out.println("폐기하려는 도서가 맞습니까?\n1:예\t2:아니오");
 				int a = sc.nextInt();
 				sc.nextLine();		
 				if (a == 1) {
-					dBDao.DiscardBooksDAO(BK_NO);
+					dBDao.DiscardBooksDAO(bk_no);
 					break;
 				} else if (a == 2) {
 					System.out.println("다시 입력하세요.");

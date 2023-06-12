@@ -1,11 +1,4 @@
-package sec01;
-
-import java.io.ObjectOutputStream.PutField;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+package teamProject01.sec01;
 
 import java.io.ObjectOutputStream.PutField;
 import java.sql.ResultSetMetaData;
@@ -18,19 +11,11 @@ import java.util.Scanner;
 
 public class Login{
 
-	public static void main(String[] args) {
-		JDBCUtil jdbc=new JDBCUtil();
-		LoginService login = new LoginService();
-
-		jdbc.connectConn();
-		login.loginService();
-		jdbc.disconnectConn();
-	}
 }
 
 
-class LoginDAO{	
-	JDBCUtil jdbc=new JDBCUtil();
+class LoginDAO{
+	JDBCUtil jdbc=JDBCUtil.getInstance();
 	
 	public Map<String, Object> loginDAO(String id, String pw) {
 		String sql="select * from student where std_no=? and std_pw=?";
@@ -46,7 +31,7 @@ class LoginDAO{
 class LoginService {
 	Scanner sc=new Scanner(System.in);
 	LoginDAO loginDao=new LoginDAO();
-	JDBCUtil jdbc=new JDBCUtil();
+	JDBCUtil jdbc=JDBCUtil.getInstance();
 	
 	public void loginService() {
 		
@@ -59,11 +44,14 @@ class LoginService {
 			Map<String, Object> result = loginDao.loginDAO(id, pw);
 			jdbc.loginUser=result;
 			if (result != null) {
-				System.out.println(result);
-				System.out.println(result.get("STD_NAME") + "님 반갑습니다.");
+				if(jdbc.loginUser.get("STD_CLSCODE").equals("1")) {
+					System.out.println(result.get("STD_NAME") + "님 반갑습니다.");
+				}else {
+					System.out.println("관리자모드입니다.");
+				}
 				break;
 			}else {
-				System.out.println("다시 로그인하세요.");
+				System.out.println("학번 또는 비밀번호가 잘못되었습니다.");
 			}
 		}
 	}
